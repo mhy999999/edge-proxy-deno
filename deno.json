@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env --allow-read --watch deno-entry.js",
+    "deploy": "deployctl deploy --project=<your-project-name> deno-entry.js"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "deno.unstable"]
+  },
+  "imports": {}
+}

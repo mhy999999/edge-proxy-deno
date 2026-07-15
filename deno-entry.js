@@ -27,7 +27,17 @@ const ctx = {
 Deno.serve(async (request) => {
 	try {
 		Object.defineProperty(request, 'cf', {
-			value: { colo: 'hkg' },
+			value: {
+				colo: 'hkg',
+				asn: 0,
+				asOrganization: 'Deno Deploy',
+				country: 'HK',
+				city: 'Hong Kong',
+				continent: 'AS',
+				latitude: '22.30',
+				longitude: '114.20',
+				timezone: 'Asia/Hong_Kong',
+			},
 			writable: true,
 			configurable: true,
 			enumerable: true,

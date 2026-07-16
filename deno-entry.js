@@ -18,7 +18,7 @@ crypto.subtle.digest = async (algorithm, data) => {
 
 const env = Deno.env.toObject();
 
-// KV 适配器：用 Deno KV 替代 Cloudflare KV
+// KV 适配器：优先用 Deno KV，失败则用内存 KV
 let _kv = null;
 try {
 	_kv = await Deno.openKv();
@@ -40,6 +40,29 @@ if (_kv) {
 			const entries = [];
 			for await (const entry of _kv.list({ prefix })) {
 				entries.push(entry);
+			}
+			return entries;
+		},
+	};
+} else {
+	// 内存 KV 后备方案（不持久化，但功能完整）
+	const _memStore = new Map();
+	env.KV = {
+		async get(key) {
+			return _memStore.get(key) ?? null;
+		},
+		async put(key, value) {
+			_memStore.set(key, value);
+		},
+		async delete(key) {
+			_memStore.delete(key);
+		},
+		async list({ prefix } = {}) {
+			const entries = [];
+			for (const [key, value] of _memStore) {
+				if (!prefix || key.startsWith(prefix)) {
+					entries.push({ key, value });
+				}
 			}
 			return entries;
 		},

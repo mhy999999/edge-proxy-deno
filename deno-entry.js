@@ -18,6 +18,34 @@ crypto.subtle.digest = async (algorithm, data) => {
 
 const env = Deno.env.toObject();
 
+// KV 适配器：用 Deno KV 替代 Cloudflare KV
+let _kv = null;
+try {
+	_kv = await Deno.openKv();
+} catch (_) {}
+
+if (_kv) {
+	env.KV = {
+		async get(key) {
+			const result = await _kv.get(key);
+			return result.value;
+		},
+		async put(key, value) {
+			await _kv.set(key, value);
+		},
+		async delete(key) {
+			await _kv.delete(key);
+		},
+		async list({ prefix } = {}) {
+			const entries = [];
+			for await (const entry of _kv.list({ prefix })) {
+				entries.push(entry);
+			}
+			return entries;
+		},
+	};
+}
+
 const ctx = {
 	waitUntil(promise) {
 		Promise.resolve(promise).catch((err) => console.error('[waitUntil error]', err));
